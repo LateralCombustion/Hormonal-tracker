@@ -1,0 +1,278 @@
+/* =============================================
+   ::DIVISION B – CSS (styles.css)
+   ============================================= */
+
+/* ::SECTION B-1 – Root Variables */
+:root {
+  --primary-color: #222;
+  --accent-color: #0066ff;
+  --accent-hover: #004bcc;
+  --bg: #f7f8fb;
+  --card: #ffffff;
+  --shadow: 0 2px 8px rgba(0,0,0,0.08);
+  --error: #dc3545;
+  --success: #28a745;
+  --warn: #ffb020;
+  --muted: #666;
+}
+
+/* ::SECTION B-0 – Top Bar */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  margin: 0 0 16px;
+  background: var(--card);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+.topbar .inline { display: inline-flex; align-items: center; gap: 8px; }
+.topbar input[type="text"] { width: 220px; }
+.switch { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
+
+/* ::SECTION B-2 – Base Elements */
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  margin: 20px;
+  background: var(--bg);
+  color: var(--primary-color);
+  line-height: 1.55;
+}
+
+.container { max-width: 980px; margin: 0 auto; }
+
+h2, h3 { margin: 0 0 10px; }
+
+.debug { color: #1a7f37; margin-bottom: 8px; }
+
+label { display: block; margin-top: 12px; font-weight: 600; }
+
+input[type="text"],
+select,
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 16px;
+}
+
+textarea { min-height: 140px; resize: vertical; }
+textarea.tall { min-height: 220px; }
+
+.hint { color: #444; font-style: italic; margin: 6px 0 12px; }
+.muted { color: var(--muted); }
+
+/* ::SECTION B-3 – Buttons & Actions */
+.action-buttons { display: flex; gap: 10px; flex-wrap: wrap; margin: 15px 0; }
+
+button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 12px;
+  background: var(--accent-color);
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: var(--shadow);
+  transition: background 0.15s ease, transform 0.05s ease-in;
+}
+
+button:hover { background: var(--accent-hover); }
+button:active { transform: translateY(1px); }
+button.danger { background: var(--error); }
+
+/* ::SECTION B-4 – Cards & Blocks */
+.card { margin-top: 20px; padding: 16px; background: var(--card); border-radius: 14px; box-shadow: var(--shadow); }
+/* ::SECTION B-5 – Questions */
+.question {
+  background: var(--card);
+  color: var(--primary-color);
+  padding: 14px;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  margin: 10px 0;
+}
+
+.question label {
+  color: var(--primary-color);
+}
+
+.question .error {
+  color: var(--error);
+  font-size: 12px;
+  margin-top: 6px;
+  display: none;
+}
+
+
+
+/* ::SECTION B-6 – Chart Canvases */
+canvas { max-width: 100%; }
+
+/* ::SECTION B-7 – Match Percentage Colors */
+#matchPercentage.high { color: var(--success); font-weight: 700; }
+#matchPercentage.medium { color: var(--warn); font-weight: 700; }
+#matchPercentage.low { color: var(--error); font-weight: 700; }
+
+/* ::SECTION B-8 – Responsive */
+@media (max-width: 720px) {
+  body { margin: 10px; }
+  button { width: 100%; }
+  .action-buttons { gap: 8px; }
+}
+
+/* ::SECTION B-9 – Dark Theme */
+body.theme-dark {
+  --primary-color: #e9ecf1;
+  --bg: #0f1420;
+  --card: #151b2b;
+  --muted: #9aa6b2;
+  --accent-color: #5aa2ff;
+  --accent-hover: #3b86ea;
+  --shadow: 0 2px 10px rgba(0,0,0,0.4);
+  border-color: #24324a;
+}
+
+body.theme-dark input[type="text"],
+body.theme-dark select,
+body.theme-dark textarea {
+  background: #0f1420;
+  color: var(--primary-color);
+  border-color: #24324a;
+}
+
+/* Extra contrast for cards/questions in dark mode */
+body.theme-dark .question {
+  background: #1a2235;
+  border: 1px solid #24324a;
+}
+
+
+
+/* ::SECTION B-10 – Question target visibility */
+.q-target { display: none; color: var(--muted); font-weight: 600; }
+body.show-targets .q-target { display: inline; }
+
+/* ::SECTION B-11 – Slider Inputs */
+.slider-wrap { margin-top: 8px; }
+.slider-labels {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0 4px 8px;
+}
+.slider-labels span:nth-child(2) { text-align: center; }
+.slider-labels span:last-child { text-align: right; }
+
+.slider-track { position: relative; padding: 10px 0 4px; }
+
+.slider-track input[type="range"] {
+  width: 100%;
+  appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent-color), var(--accent-color)) no-repeat;
+  background-size: calc((var(--val, 2) / 4) * 100%) 100%;
+  background-color: #dde3ec;
+  outline: none;
+  transition: background-size 0.12s ease;
+}
+body.theme-dark .slider-track input[type="range"] {
+  background-color: #24324a;
+}
+
+.slider-track input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--card);
+  border: 2px solid var(--accent-color);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+}
+.slider-track input[type="range"]::-moz-range-thumb {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--card); border: 2px solid var(--accent-color);
+  box-shadow: var(--shadow); cursor: pointer;
+}
+
+.slider-bubble {
+  position: absolute;
+  top: -28px;
+  transform: translateX(calc((var(--val, 2) / 4) * (100% - 18px)));
+  font-size: 12px;
+  background: var(--card);
+  color: var(--primary-color);
+  padding: 4px 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.08);
+  white-space: nowrap;
+  pointer-events: none;
+}
+body.theme-dark .slider-bubble { border-color: #24324a; }
+
+/* ::SECTION B-12 – Debug control for scale override (only visible when show-targets) */
+.q-ctl { margin-left: 8px; display: none; }
+body.show-targets .q-ctl { display: inline-block; }
+.q-ctl select {
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 8px;
+  border: 1px solid #d0d7e2;
+  background: var(--card);
+  color: var(--primary-color);
+}
+body.theme-dark .q-ctl select { border-color: #24324a; }
+
+
+/* ::SECTION UI – Tooltips & Profile History */
+button[title], input[title], select[title], textarea[title], label[title] {
+  /* native browser tooltip on hover via title attribute */
+}
+
+.profile-history.card-sub{
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03);
+}
+.ph-row{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:10px;
+}
+.ph-hint{ opacity:0.75; font-size:0.9rem; }
+.ph-controls{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+.ph-controls select{
+  min-width: 240px;
+  flex: 1 1 240px;
+}
+.ph-small{
+  margin-top:8px;
+  opacity:0.7;
+  font-size:0.85rem;
+}
+button.danger{
+  border-color: rgba(255,80,80,0.6) !important;
+}
+button.danger:hover{
+  filter: brightness(1.05);
+}

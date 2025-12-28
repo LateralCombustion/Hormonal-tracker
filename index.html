@@ -1,0 +1,174 @@
+<!-- ::DIVISION A – HTML (index.html) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- ::SECTION A-1 – Head -->
+  <!-- PART A-1-1 – Meta & Title -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hormone Profile Tracker</title>
+
+  <!-- PART A-1-2 – External Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <!-- PART A-1-3 – Stylesheet Link -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ::SECTION A-0 – Top Bar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <label class="inline">
+        <span>Your Name:</span>
+        <input type="text" id="yourName" placeholder="Enter your name" aria-label="Your name" required />
+      </label>
+      <label class="inline">
+        <span>Partner's Name:</span>
+        <input type="text" id="partnerName" placeholder="Enter partner's name" aria-label="Partner's name" />
+      </label>
+    </div>
+    <div class="topbar-right">
+      <label class="switch">
+        <input type="checkbox" id="showTargetsToggle" / title="Show/hide target hormone ranges on charts.">
+        <span>Show hormone targets</span>
+      </label>
+      <label class="switch">
+        <input type="checkbox" id="themeToggle" checked / title="Toggle dark/light style.">
+        <span>Dark style</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- ::SECTION A-2 – App Container -->
+  <div class="container">
+    <!-- PART A-2-1 – Title & Debug -->
+    <h2>Hormone Profile Tracker</h2>
+    <p id="debug" class="debug" aria-live="polite" hidden>Script loaded successfully.</p>
+
+    <!-- PART A-2-2 – Form Start -->
+    <form id="hormoneForm" novalidate>
+      <!-- ::SECTION A-3 – Test Settings -->
+      <!-- PART A-3-1 – Test Length Selector -->
+      <label for="testLengthSelect">Test Length:</label>
+      <select id="testLengthSelect" aria-label="Select test length" title="Choose how many questions you want (affects accuracy).">
+        <option value="long">Long (100 questions, Most Accurate)</option>
+        <option value="normal">Normal (80 questions, Balanced)</option>
+        <option value="quick">Quick (60 questions, Fastest)</option>
+      </select>
+      <p id="accuracyMessage" class="hint">Accuracy: High (100 questions)</p>
+
+      <!-- ::SECTION A-4 – Questionnaire -->
+      <!-- PART A-4-1 – Instruction -->
+      <h3>Answer the Questions</h3>
+      <p id="questionInstruction" class="muted">Answer all 100 questions to assess your hormone profiles. Questions are mixed to ensure genuine responses.</p>
+      <!-- PART A-4-2 – Questions Mount Point -->
+      <div id="questions"></div>
+
+      <!-- PART A-4-3 – Actions -->
+      <div class="action-buttons">
+        <button type="button" id="submitAnswersBtn" title="Calculate your scores and update charts + the shareable summary box below.">Submit Answers</button>
+        <button type="button" id="randomizeBtn" title="Fill the sliders with random values (for testing).">Randomize Scores</button>
+      </div>
+
+      <!-- ::SECTION A-5 – Data Exchange -->
+      <!-- PART A-5-1b – Profile History (Local Save/Load) -->
+      <div class="profile-history card-sub">
+        <div class="ph-row">
+          <strong>Profile History</strong>
+          <span class="ph-hint">Save your latest profile to compare later.</span>
+        </div>
+        <div class="ph-controls">
+          <button type="button" id="saveProfileBtn" title="Save your current Data Summary to local storage (kept in this browser).">Save Profile</button>
+          <select id="savedProfilesSelect" title="Select a previously saved profile.">
+            <option value="">— Select saved profile —</option>
+          </select>
+          <button type="button" id="loadSavedToPartnerBtn" title="Load the selected saved profile into the Partner box for comparison.">Load as Partner</button>
+          <button type="button" id="deleteSavedProfileBtn" class="danger" title="Delete the selected saved profile from this browser.">Delete</button>
+        </div>
+        <div class="ph-small">
+          Saved profiles are stored only in this browser (LocalStorage).
+        </div>
+      </div>
+
+
+      
+<!-- PART A-5-1 – Your Data Summary -->
+      <h3>Your Data Summary (Copy to Share)</h3>
+      <textarea id="dataOutput" readonly aria-label="Your hormone scores summary" title="This box contains your shareable JSON summary after submitting."></textarea>
+
+
+      <!-- PART A-5-2 – Partner Input -->
+      <h3>Paste Partner's Data</h3>
+      <textarea id="partnerInput" placeholder="Paste your partner's scores here (JSON)" aria-label="Partner's hormone scores input" title="Paste a saved profile here to compare with your current answers."></textarea>
+      <div class="action-buttons">
+        <button type="button" id="loadPartnerBtn" title="Load the pasted partner profile and update comparison charts.">Load Partner's Scores</button>
+        <button type="submit">Save/Submit</button>
+        <button type="button" id="clearAllBtn" class="danger" title="Clear your answers, partner data, and charts (does not delete saved profiles).">Clear All</button>
+      </div>
+
+      <!-- ::SECTION A-6 – Analysis Prompt -->
+      <h3>AI Analysis Prompt</h3>
+      <textarea id="aiPromptOutput" placeholder="AI-ready prompt will appear here..." class="tall" readonly></textarea>
+      <div class="action-buttons">
+        <button type="button" id="generateAIPromptBtn" title="Generate a safe, non-diagnostic GPT prompt (JSON-only output).">Generate AI Prompt</button>
+      </div>
+
+      <!-- ::SECTION A-7 – Charts -->
+      <!-- PART A-7-1 – Hormone Selector for Radar -->
+      <label for="resultHormoneSelect">View Results For:</label>
+      <select id="resultHormoneSelect" aria-label="Select hormone to view results">
+        <option value="dopamine">Dopamine</option>
+        <option value="endorphins">Endorphins</option>
+        <option value="serotonin">Serotonin</option>
+        <option value="oxytocin">Oxytocin</option>
+        <option value="vasopressin">Vasopressin</option>
+        <option value="cortisol">Cortisol</option>
+        <option value="testosterone">Testosterone</option>
+        <option value="adrenaline">Adrenaline</option>
+        <option value="progesterone">Progesterone</option>
+        <option value="estrogen">Estrogen</option>
+      </select>
+
+      <!-- PART A-7-2 – Radar Comparison Chart -->
+      <div id="chartContainer" class="card">
+        <h3>Hormone Score Comparison</h3>
+        <canvas id="comparisonChart" aria-label="Radar chart comparing scores" role="img"></canvas>
+      </div>
+
+      <!-- PART A-7-3 – Match Stats -->
+      <div id="matchStats" class="card">
+        <h3>Match Statistics</h3>
+        <p id="matchPercentage" aria-label="Hormone match percentage"></p>
+        <p id="attachmentStyles" aria-label="Attachment styles"></p>
+        <p class="no-partner-message" hidden>Please load your partner's scores to view match statistics.</p>
+      </div>
+
+      <!-- PART A-7-4 – Overall Compatibility Bar Chart -->
+      <div id="compatibilityChartContainer" class="card">
+        <h3>Overall Partner Compatibility</h3>
+        <canvas id="compatibilityChart" aria-label="Overall compatibility bar chart" role="img"></canvas>
+        <p class="no-partner-message" hidden>Please load your partner's scores to view compatibility.</p>
+      </div>
+
+      <!-- PART A-7-5 – Statistical Overview Bar Chart (Averages) -->
+      <div id="statisticalChartContainer" class="card">
+        <h3>Statistical Hormone Overview</h3>
+        <canvas id="statisticalChartCanvas" aria-label="Average hormone activity bar chart" role="img"></canvas>
+      </div>
+    </form>
+  </div>
+
+  <!-- PART A-7-6 – Responses Summary -->
+<div id="responsesSummary" class="card">
+  <h3>Responses Summary</h3>
+  <div id="responseList" aria-live="polite"></div>
+</div>
+
+
+  <!-- ::SECTION A-8 – Scripts (order matters) -->
+  <!-- PART A-8-1 – Case Data & Explanations -->
+  <script src="cases.js"></script>
+  <!-- PART A-8-2 – Main App Logic -->
+  <script src="main.js"></script>
+</body>
+</html>
