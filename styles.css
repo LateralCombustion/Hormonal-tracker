@@ -168,12 +168,12 @@ body.show-targets .q-target { display: inline; }
   grid-template-columns: 1fr 1fr 1fr;
   font-size: 12px;
   color: var(--muted);
-  margin: 0 4px 8px;
+  margin: 0 4px 16px;
 }
 .slider-labels span:nth-child(2) { text-align: center; }
 .slider-labels span:last-child { text-align: right; }
 
-.slider-track { position: relative; padding: 10px 0 4px; }
+.slider-track { position: relative; padding: 22px 0 6px; }
 
 .slider-track input[type="range"] {
   width: 100%;
@@ -208,7 +208,7 @@ body.theme-dark .slider-track input[type="range"] {
 
 .slider-bubble {
   position: absolute;
-  top: -28px;
+  top: 6px;
   transform: translateX(calc((var(--val, 2) / 4) * (100% - 18px)));
   font-size: 12px;
   background: var(--card);
@@ -218,6 +218,8 @@ body.theme-dark .slider-track input[type="range"] {
   border: 1px solid rgba(0,0,0,0.08);
   white-space: nowrap;
   pointer-events: none;
+
+  z-index: 1;
 }
 body.theme-dark .slider-bubble { border-color: #24324a; }
 
@@ -235,44 +237,7 @@ body.show-targets .q-ctl { display: inline-block; }
 body.theme-dark .q-ctl select { border-color: #24324a; }
 
 
-/* ::SECTION UI – Tooltips & Profile History */
-button[title], input[title], select[title], textarea[title], label[title] {
-  /* native browser tooltip on hover via title attribute */
-}
-
-.profile-history.card-sub{
-  margin-top: 12px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(255,255,255,0.03);
-}
-.ph-row{
-  display:flex;
-  align-items:baseline;
-  justify-content:space-between;
-  gap:12px;
-  margin-bottom:10px;
-}
-.ph-hint{ opacity:0.75; font-size:0.9rem; }
-.ph-controls{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  align-items:center;
-}
-.ph-controls select{
-  min-width: 240px;
-  flex: 1 1 240px;
-}
-.ph-small{
-  margin-top:8px;
-  opacity:0.7;
-  font-size:0.85rem;
-}
-button.danger{
-  border-color: rgba(255,80,80,0.6) !important;
-}
-button.danger:hover{
-  filter: brightness(1.05);
-}
+/* ::SECTION B-UI – Disclaimer */
+.disclaimer h3{ margin:0 0 8px; }
+.disclaimer p{ margin:0 0 8px; }
+.disclaimer p:last-child{ margin-bottom:0; }

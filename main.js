@@ -82,8 +82,6 @@ class HormoneTracker {
     this.theme = localStorage.getItem('theme') || 'dark';
     this.showTargets = localStorage.getItem('showTargets') === 'true';
 
-    this.lastSubmission = this.getLastSubmissionMeta() || null;
-
     // UI Elements
     this.els = {
       form: $('#hormoneForm'),
@@ -113,11 +111,6 @@ class HormoneTracker {
       // Toggles
       showTargetsToggle: $('#showTargetsToggle'),
       themeToggle: $('#themeToggle'),
-            // Profile history
-      saveProfileBtn: $('#saveProfileBtn'),
-      savedProfilesSelect: $('#savedProfilesSelect'),
-      loadSavedToPartnerBtn: $('#loadSavedToPartnerBtn'),
-      deleteSavedProfileBtn: $('#deleteSavedProfileBtn'),
       // Responses summary mount
       responseList: $('#responseList')
     };
@@ -153,8 +146,6 @@ class HormoneTracker {
     this.loadScores();
     this.updateDisplay();
     this.initEventListeners();
-    this.refreshSavedProfilesSelect();
-    this.updateHistoryButtonState();
   }
 
   // PART D-2-2 – Event Listeners
@@ -180,21 +171,6 @@ class HormoneTracker {
 
     if (this.els.clearAllBtn) {
       this.els.clearAllBtn.addEventListener('click', () => this.clearAll());
-    }
-
-
-    // Profile history (local save/load)
-    if (this.els.saveProfileBtn) {
-      this.els.saveProfileBtn.addEventListener('click', () => this.saveCurrentProfile());
-    }
-    if (this.els.loadSavedToPartnerBtn) {
-      this.els.loadSavedToPartnerBtn.addEventListener('click', () => this.loadSelectedProfileToPartner());
-    }
-    if (this.els.deleteSavedProfileBtn) {
-      this.els.deleteSavedProfileBtn.addEventListener('click', () => this.deleteSelectedSavedProfile());
-    }
-    if (this.els.savedProfilesSelect) {
-      this.els.savedProfilesSelect.addEventListener('change', () => this.updateHistoryButtonState());
     }
 
     if (this.els.form) {
@@ -468,6 +444,8 @@ renderQuestions() {
       const v = Number(slider.value || 2);
       bubble.textContent = labels[v] || v;
       bubble.style.setProperty('--val', v);
+          // Keep slider fill synced with knob
+          slider.style.setProperty('--val', v);
     };
     slider.addEventListener('input', update);
     update();
@@ -496,6 +474,8 @@ renderQuestions() {
           const v = Number(slider.value || 2);
           bubble.textContent = lab[v] || v;
           bubble.style.setProperty('--val', v);
+          // Keep slider fill synced with knob
+          slider.style.setProperty('--val', v);
         };
         slider.addEventListener('input', update);
         update();
@@ -516,22 +496,6 @@ renderQuestions() {
     const num = Number(level);
     return Number.isInteger(num) && num >= 0 && num <= 9;
   }
-
-  // PART D-2-7b – Submission Meta (used for hard-limit compare)
-  getLastSubmissionMeta() {
-    try { return JSON.parse(localStorage.getItem('lastSubmissionMeta') || 'null'); }
-    catch { return null; }
-  }
-
-  setLastSubmissionMeta(meta) {
-    try { localStorage.setItem('lastSubmissionMeta', JSON.stringify(meta || null)); }
-    catch {}
-  }
-
-  isLongComplete(meta) {
-    return !!(meta && meta.testLength === 'long' && Number(meta.questionsAnswered) === 100);
-  }
-
 
  // PART D-2-8 – Process Answers (weighted, normalized to 0–9) + capture response labels
 processAnswers() {
@@ -601,14 +565,6 @@ processAnswers() {
 
   this.yourName = this.els.yourName.value.trim();
   localStorage.setItem('yourName', this.yourName);
-
-  // record submission meta (used for hard-limit compare)
-  this.lastSubmission = {
-    testLength: this.testLength,
-    questionsAnswered: totalQuestions,
-    submittedAt: Date.now()
-  };
-  this.setLastSubmissionMeta(this.lastSubmission);
   this.saveToStorage();
   this.loadScores();
   this.updateDisplay();
@@ -644,27 +600,6 @@ processAnswers() {
     try { data = JSON.parse(input); }
     catch { alert('Invalid JSON.'); return; }
 
-    // Hard limit: only compare if BOTH completed Long (100)
-    if (!this.isLongComplete(this.lastSubmission)) {
-      alert('Comparison is locked: you must complete the Long (100 questions) test and submit before loading a partner profile.');
-      return;
-    }
-
-    const partnerMeta = data.meta || null;
-    const partnerTestLength = partnerMeta?.testLength || data.testLength || null;
-    const partnerAnswered = Number(partnerMeta?.questionsAnswered ?? (partnerTestLength === 'long' ? 100 : NaN));
-    if (!(partnerTestLength === 'long' && partnerAnswered === 100)) {
-      alert('Comparison is locked: partner must also complete the Long (100 questions) test and submit/export their profile.');
-      return;
-    }
-
-    const partnerNameFromJson = (partnerMeta?.name || data.name || '').trim();
-    if (partnerNameFromJson && this.els.partnerName) {
-      this.els.partnerName.value = partnerNameFromJson;
-      this.partnerName = partnerNameFromJson;
-      localStorage.setItem('partnerName', this.partnerName);
-    }
-
     const valid = {}; let any = false;
     Object.keys(this.hormones).forEach(hormone => {
       valid[hormone] = {};
@@ -690,17 +625,7 @@ processAnswers() {
 
   // PART D-2-11 – Display Orchestration
   updateDisplay() {
-    const payload = {
-      name: this.yourName,
-      testLength: this.testLength,
-      meta: {
-        name: this.yourName,
-        testLength: this.testLength,
-        questionsAnswered: this.lastSubmission?.questionsAnswered ?? null,
-        submittedAt: this.lastSubmission?.submittedAt ?? null
-      },
-      scores: this.scores
-    };
+    const payload = { name: this.yourName, testLength: this.testLength, scores: this.scores };
     if (this.els.dataOutput) this.els.dataOutput.value = JSON.stringify(payload, null, 2);
 
     this.updateRadarChart();
@@ -985,142 +910,6 @@ processAnswers() {
 
     mount.innerHTML = html;
   }
-
-  // PART D-2-6 – Profile History (LocalStorage)
-  getSavedProfiles() {
-    try {
-      const raw = localStorage.getItem('hormoneProfilesSaved');
-      const arr = raw ? JSON.parse(raw) : [];
-      return Array.isArray(arr) ? arr : [];
-    } catch {
-      return [];
-    }
-  }
-
-  setSavedProfiles(arr) {
-    localStorage.setItem('hormoneProfilesSaved', JSON.stringify(arr || []));
-  }
-
-  refreshSavedProfilesSelect() {
-    if (!this.els.savedProfilesSelect) return;
-    const sel = this.els.savedProfilesSelect;
-    const saved = this.getSavedProfiles();
-
-    const current = sel.value;
-    sel.innerHTML = '<option value="">— Select saved profile —</option>';
-
-    // Newest first
-    saved
-      .slice()
-      .sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0))
-      .forEach((p) => {
-        const opt = document.createElement('option');
-        opt.value = p.id;
-        const when = p.createdAt ? new Date(p.createdAt).toLocaleString() : '';
-        const label = `${p.label || 'Saved profile'}${when ? ' — ' + when : ''}`;
-        opt.textContent = label;
-        sel.appendChild(opt);
-      });
-
-    // restore selection if possible
-    if (current) sel.value = current;
-  }
-
-  updateHistoryButtonState() {
-    const hasSel = !!(this.els.savedProfilesSelect && this.els.savedProfilesSelect.value);
-    if (this.els.loadSavedToPartnerBtn) this.els.loadSavedToPartnerBtn.disabled = !hasSel;
-    if (this.els.deleteSavedProfileBtn) this.els.deleteSavedProfileBtn.disabled = !hasSel;
-  }
-
-  saveCurrentProfile() {
-    const txt = (this.els.dataOutput?.value || '').trim();
-    if (!txt) {
-      alert('Nothing to save yet. Click “Submit Answers” first to generate your Data Summary.');
-      return;
-    }
-
-    let data;
-    try {
-      data = JSON.parse(txt);
-    } catch (e) {
-      alert('Data Summary is not valid JSON. Please click “Submit Answers” again.');
-      return;
-    }
-
-    const your = (this.els.yourName?.value || '').trim() || 'You';
-
-    // Ensure the saved JSON includes the user's name (so loads are labeled correctly)
-    data.name = your;
-    data.meta = data.meta || {};
-    data.meta.name = your;
-
-    const label = `${your}`;
-
-    const saved = this.getSavedProfiles();
-    const id = `p_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-
-    saved.push({
-      id,
-      label,
-      createdAt: Date.now(),
-      data
-    });
-
-    // keep last 30 by default (avoid infinite growth)
-    const trimmed = saved.slice(-30);
-    this.setSavedProfiles(trimmed);
-
-    this.refreshSavedProfilesSelect();
-    if (this.els.savedProfilesSelect) this.els.savedProfilesSelect.value = id;
-    this.updateHistoryButtonState();
-
-    alert('Saved! You can now load it as “Partner” later for comparison.');
-  }
-
-  loadSelectedProfileToPartner() {
-    if (!this.els.savedProfilesSelect || !this.els.partnerInput) return;
-    const id = this.els.savedProfilesSelect.value;
-    if (!id) return;
-
-    const saved = this.getSavedProfiles();
-    const found = saved.find(p => p.id === id);
-    if (!found) {
-      alert('Could not find that saved profile.');
-      this.refreshSavedProfilesSelect();
-      this.updateHistoryButtonState();
-      return;
-    }
-
-    // Populate partner name from saved profile (if present)
-    const savedName = (found.data?.meta?.name || found.data?.name || found.label || '').trim();
-    if (savedName && this.els.partnerName) {
-      this.els.partnerName.value = savedName;
-      this.partnerName = savedName;
-      localStorage.setItem('partnerName', this.partnerName);
-    }
-
-    // Load into partner box and trigger existing load flow
-    this.els.partnerInput.value = JSON.stringify(found.data, null, 2);
-    if (this.els.loadPartnerBtn) this.els.loadPartnerBtn.click();
-  }
-
-  deleteSelectedSavedProfile() {
-    if (!this.els.savedProfilesSelect) return;
-    const id = this.els.savedProfilesSelect.value;
-    if (!id) return;
-
-    const saved = this.getSavedProfiles();
-    const found = saved.find(p => p.id === id);
-    const label = found?.label || 'this profile';
-    if (!confirm(`Delete ${label}? This cannot be undone.`)) return;
-
-    const next = saved.filter(p => p.id !== id);
-    this.setSavedProfiles(next);
-
-    this.refreshSavedProfilesSelect();
-    this.updateHistoryButtonState();
-  }
-
 }
 
 /* ::SECTION D-3 – Initialize */
